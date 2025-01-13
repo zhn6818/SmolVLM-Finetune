@@ -48,6 +48,64 @@ def encode_video(video_path, max_num_frames=10):
     frames = [Image.fromarray(v.astype('uint8')) for v in frames]
     return frames
 
+def pad_pixel_values(pixel_values_list, pad_value=0.0):
+    """
+    pixel_values_list: list of Tensors
+      - 각 텐서는 shape = [1, T_i, C, H, W]
+    반환:
+      - shape = [B, T_max, C, H, W]
+    """
+    batch_size = len(pixel_values_list)
+    frame_lengths = [pv.shape[1] for pv in pixel_values_list]  # pv.shape = [1, T_i, C, H, W]
+    T_max = max(frame_lengths)
+
+    # 첫 텐서에서 C,H,W,dtype,device 뽑아오기
+    _, _, C, H, W = pixel_values_list[0].shape
+    dtype = pixel_values_list[0].dtype
+    device = pixel_values_list[0].device
+
+    # 최종 [B, T_max, C, H, W] shape에 pad_value로 채운 텐서
+    output = torch.full((batch_size, T_max, C, H, W),
+                        fill_value=pad_value,
+                        dtype=dtype,
+                        device=device)
+
+    # 실제 값 복사
+    for i, pv in enumerate(pixel_values_list):
+        t_i = pv.shape[1]
+        # pv: [1, T_i, C, H, W] => pv[0]: [T_i, C, H, W]
+        output[i, :t_i] = pv[0]
+    return output
+
+
+def pad_pixel_attention_masks(mask_list, pad_value=0):
+    """
+    mask_list: list of Tensors
+      - 각 텐서는 shape = [T_i, H, W] (또는 [1, T_i, H, W]일 수도 있음)
+    반환:
+      - shape = [B, T_max, H, W]
+    """
+    batch_size = len(mask_list)
+    # 만약 mask가 [T_i, H, W]면 frame_lengths = mask.shape[0],
+    # [1, T_i, H, W]라면 frame_lengths = mask.shape[1].
+    # 아래 코드에서는 [T_i, H, W]라고 가정:
+    frame_lengths = [m.shape[0] for m in mask_list]
+    T_max = max(frame_lengths)
+
+    _, H, W = mask_list[0].shape
+    dtype = mask_list[0].dtype
+    device = mask_list[0].device
+
+    output = torch.full((batch_size, T_max, H, W),
+                        fill_value=pad_value,
+                        dtype=dtype,
+                        device=device)
+
+    for i, m in enumerate(mask_list):
+        t_i = m.shape[0]
+        output[i, :t_i] = m
+    return output
+
 class LazySupervisedDataset(Dataset):
     """Dataset for supervised fine-tuning."""
 
@@ -113,7 +171,7 @@ class LazySupervisedDataset(Dataset):
 
         all_input_ids = [torch.tensor([1])] # bos token id
         all_labels = [torch.tensor([-100])] # ignore bos token
-
+        
         for idx, j in enumerate(range(0, len(sources), 2)):
             user_input = sources[j]
             gpt_response = sources[j + 1]
@@ -128,12 +186,12 @@ class LazySupervisedDataset(Dataset):
                 user_prompt = f"User: {user_input['content']}{EOS_TOKEN}\nAssistant: "
             
             if is_last_turn:
-                gpt_response = f"{gpt_response['content']}{EOS_TOKEN}"
+                gpt_prompt = f"{gpt_response['content']}{EOS_TOKEN}"
             else:
-                gpt_response = f"{gpt_response['content']}{EOS_TOKEN}\n"
+                gpt_prompt = f"{gpt_response['content']}{EOS_TOKEN}\n"
             
             if idx == 0:
-                inputs = processor(user_prompt, images, return_tensors='pt')
+                inputs = processor(text=user_prompt, images=images, return_tensors='pt')
                 prompt_input_ids = inputs['input_ids']
                 pixel_values = inputs.get('pixel_values', None)
                 pixel_attention_mask = inputs.get('pixel_attention_mask', None)
@@ -141,7 +199,7 @@ class LazySupervisedDataset(Dataset):
             else:
                 prompt_input_ids = processor.tokenizer(user_prompt, add_special_tokens=False, return_tensors='pt')['input_ids']
 
-            response_input_ids = processor.tokenizer(gpt_response, add_special_tokens=False, return_tensors='pt')['input_ids']
+            response_input_ids = processor.tokenizer(gpt_prompt, add_special_tokens=False, return_tensors='pt')['input_ids']
 
             input_ids = torch.cat([prompt_input_ids, response_input_ids], dim=1).squeeze(0)
             labels = torch.cat(
@@ -194,9 +252,9 @@ class DataCollatorForSupervisedDataset(object):
 
         attention_mask = input_ids != self.pad_token_id
         labels = pad_sequence(batch_label_ids, padding_side='right', padding_value=IGNORE_INDEX)
-        pixel_values = torch.cat([pv for pv in batch_pixel_values if pv is not None and pv.numel() > 0], dim=0) if any(pv is not None and pv.numel() > 0 for pv in batch_pixel_values) else None
-        pixel_attention_mask = torch.cat([isize for isize in batch_pixel_attention_mask if isize is not None and isize.numel() > 0], dim=0) if any(isize is not None and isize.numel() > 0 for isize in batch_pixel_attention_mask) else None
-
+        pixel_values = pad_pixel_values(batch_pixel_values, pad_value=0.0)
+        pixel_attention_mask = pad_pixel_attention_masks(batch_pixel_attention_mask, pad_value=0)
+        
         batch_dict = dict(
             input_ids=input_ids,
             labels=labels,
@@ -214,7 +272,7 @@ def replace_image_tokens(input_string, start_count=1):
     if LLAVA_IMAGE_TOKEN not in input_string:
         return input_string, count
 
-    while LLAVA_IMAGE_TOKEN in input_string:
+    while LLAVA_IMAGE_TOKEN+'\n' in input_string:
         input_string = input_string.replace(LLAVA_IMAGE_TOKEN+'\n', "<image>", 1)
         count += 1
 
