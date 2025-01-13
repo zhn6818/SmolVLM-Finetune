@@ -49,22 +49,13 @@ def encode_video(video_path, max_num_frames=10):
     return frames
 
 def pad_pixel_values(pixel_values_list, pad_value=0.0):
-    """
-    pixel_values_list: list of Tensors
-      - 각 텐서는 shape = [1, T_i, C, H, W]
-    반환:
-      - shape = [B, T_max, C, H, W]
-    """
     batch_size = len(pixel_values_list)
-    frame_lengths = [pv.shape[1] for pv in pixel_values_list]  # pv.shape = [1, T_i, C, H, W]
+    frame_lengths = [pv.shape[1] for pv in pixel_values_list] 
     T_max = max(frame_lengths)
-
-    # 첫 텐서에서 C,H,W,dtype,device 뽑아오기
     _, _, C, H, W = pixel_values_list[0].shape
     dtype = pixel_values_list[0].dtype
     device = pixel_values_list[0].device
 
-    # 최종 [B, T_max, C, H, W] shape에 pad_value로 채운 텐서
     output = torch.full((batch_size, T_max, C, H, W),
                         fill_value=pad_value,
                         dtype=dtype,
@@ -73,37 +64,30 @@ def pad_pixel_values(pixel_values_list, pad_value=0.0):
     # 실제 값 복사
     for i, pv in enumerate(pixel_values_list):
         t_i = pv.shape[1]
-        # pv: [1, T_i, C, H, W] => pv[0]: [T_i, C, H, W]
         output[i, :t_i] = pv[0]
     return output
 
 
 def pad_pixel_attention_masks(mask_list, pad_value=0):
-    """
-    mask_list: list of Tensors
-      - 각 텐서는 shape = [T_i, H, W] (또는 [1, T_i, H, W]일 수도 있음)
-    반환:
-      - shape = [B, T_max, H, W]
-    """
     batch_size = len(mask_list)
-    # 만약 mask가 [T_i, H, W]면 frame_lengths = mask.shape[0],
-    # [1, T_i, H, W]라면 frame_lengths = mask.shape[1].
-    # 아래 코드에서는 [T_i, H, W]라고 가정:
-    frame_lengths = [m.shape[0] for m in mask_list]
+    frame_lengths = [mask.shape[1] for mask in mask_list]
     T_max = max(frame_lengths)
 
-    _, H, W = mask_list[0].shape
+    _, _, H, W = mask_list[0].shape
     dtype = mask_list[0].dtype
     device = mask_list[0].device
 
-    output = torch.full((batch_size, T_max, H, W),
-                        fill_value=pad_value,
-                        dtype=dtype,
-                        device=device)
+    output = torch.full(
+        (batch_size, T_max, H, W),
+        fill_value=pad_value,
+        dtype=dtype,
+        device=device
+    )
 
     for i, m in enumerate(mask_list):
-        t_i = m.shape[0]
-        output[i, :t_i] = m
+        t_i = m.shape[1]
+        output[i, :t_i] = m[0]
+
     return output
 
 class LazySupervisedDataset(Dataset):
