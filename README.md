@@ -19,6 +19,7 @@ This repository contains a script for training [SmolVLM](https://huggingface.co/
 
 - [Fine-tuning SmolVLM](#fine-tuning-smolvlm)
   - [Other projects](#other-projects)
+  - [Update](#update)
   - [Table of Contents](#table-of-contents)
   - [Supported Features](#supported-features)
   - [Installation](#installation)
@@ -197,7 +198,6 @@ bash scripts/finetune_lora_vision.sh
 ```
 
 **IMPORTANT:** If you want to tune the `embed_token` with LoRA, You need to tune `lm_head` together.
-**Note:** Freezing LLM would only work without LoRA (including vision_model LoRA).
 
 <details>
 <summary>Training arguments</summary>

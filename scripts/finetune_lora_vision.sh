@@ -5,6 +5,8 @@ MODEL_NAME="HuggingFaceTB/SmolVLM-Instruct"
 export PYTHONPATH=src:$PYTHONPATH
 
 # If you want to tune the `embed_token` with LoRA, You need to tune `lm_head` together
+# The connector is not included in the vision_lora. You should set tune_img_projector to True to finetune the connector.
+# Also, it might be a good idea to set additional lr for the connector.
 
 deepspeed src/training/train.py \
     --lora_enable True \
@@ -18,8 +20,8 @@ deepspeed src/training/train.py \
     --model_id $MODEL_NAME \
     --data_path /path/to/your/training/data.json \
     --image_folder /path/to/your/image/folder \
-    --freeze_vision_tower False \
-    --freeze_llm False \
+    --freeze_vision_tower True \
+    --freeze_llm True \
     --tune_connector True \
     --bf16 True \
     --fp16 False \
