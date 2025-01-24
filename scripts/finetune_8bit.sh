@@ -21,7 +21,7 @@ deepspeed src/training/train.py \
     --learning_rate 1e-5 \
     --connector_lr 1e-5 \
     --vision_lr 2e-6 \
-    --weight_decay 0. \
+    --weight_decay 0.01 \
     --warmup_ratio 0.03 \
     --lr_scheduler_type "cosine" \
     --logging_steps 1 \

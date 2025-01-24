@@ -12,6 +12,7 @@ This repository contains a script for training [SmolVLM](https://huggingface.co/
 
 ## Update
 
+- [2025/01/24] Add option for using DoRA.
 - [2025/01/24] Fixed error in LoRA.
 - [2025/01/24] 🔥Supports mixed-modality data.
 
@@ -221,6 +222,9 @@ bash scripts/finetune_lora_vision.sh
 - `--fp16` (bool): Option for using fp16.
 - `--min_pixels` (int): Option for minimum input tokens.
 - `--max_pixles` (int): OPtion for maximum maxmimum tokens.
+- `--lora_enable` (bool): Option for enabling LoRA (default: False)
+- `--vision_lora` (bool): Option for including vision_tower to the LoRA module. The `lora_enable` should be `True` to use this option. (default: False)
+- `--use_dora` (bool): Option for using DoRA instead of LoRA. The `lora_enable` should be `True` to use this option. (default: False)
 - `--lora_namespan_exclude` (str): Exclude modules with namespans to add LoRA.
 - `--max_seq_length` (int): Maximum sequence length (default: 32K).
 - `--bits` (int): Quantization bits (default: 16).

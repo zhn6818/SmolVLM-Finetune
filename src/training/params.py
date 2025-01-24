@@ -44,6 +44,7 @@ class TrainingArguments(TrainingArguments):
     )
     lora_enable: bool = False
     vision_lora: bool = False
+    use_dora: bool = False
     lora_rank: int = 64
     lora_alpha: int = 64
     lora_dropout: float = 0.05

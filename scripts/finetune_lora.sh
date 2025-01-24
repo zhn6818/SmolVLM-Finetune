@@ -8,6 +8,7 @@ export PYTHONPATH=src:$PYTHONPATH
 
 deepspeed src/training/train.py \
     --lora_enable True \
+    --use_dora False \
     --lora_namespan_exclude "['lm_head', 'embed_tokens']" \
     --lora_rank 64 \
     --lora_alpha 64 \
@@ -30,7 +31,7 @@ deepspeed src/training/train.py \
     --learning_rate 1e-4 \
     --connector_lr 1e-5 \
     --vision_lr 2e-6 \
-    --weight_decay 0. \
+    --weight_decay 0.01 \
     --warmup_ratio 0.03 \
     --lr_scheduler_type "cosine" \
     --logging_steps 1 \
