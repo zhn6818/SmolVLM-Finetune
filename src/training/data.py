@@ -174,7 +174,7 @@ class LazySupervisedDataset(Dataset):
             else:
                 gpt_prompt = f"{gpt_response['content']}{EOS_TOKEN}\n"
             
-            if idx == 0:
+            if LLAVA_IMAGE_TOKEN in user_prompt:
                 inputs = processor(text=user_prompt, images=images, return_tensors='pt')
                 prompt_input_ids = inputs['input_ids']
                 pixel_values = inputs.get('pixel_values', None)
