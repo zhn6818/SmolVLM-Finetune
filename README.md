@@ -10,6 +10,11 @@ This repository contains a script for training [SmolVLM](https://huggingface.co/
 **[[Molmo Finetune]](https://github.com/2U1/Molmo-Finetune)**<br>
 **[[Pixtral Finetune]](https://github.com/2U1/Pixtral-Finetune)**
 
+## Update
+
+- [2025/01/24] Fixed error in LoRA.
+- [2025/01/24] 🔥Supports mixed-modality data.
+
 ## Table of Contents
 
 - [Fine-tuning SmolVLM](#fine-tuning-smolvlm)
