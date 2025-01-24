@@ -263,7 +263,9 @@ You could see this [issue](https://github.com/andimarafioti/florence2-finetuning
 
 ## TODO
 
-- [] Add feature for controlling image size.
+- [ ] Add feature for controlling image size.
+- [x] Handle interleaved dataset.
+- [x] Hadnle mixed-modality dataset.
 
 ## Known Issues
 

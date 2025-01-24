@@ -149,7 +149,11 @@ class LazySupervisedDataset(Dataset):
             num_frames = len(images)
 
         else:
-            images = None
+            # Making dummy images for the case where there are no images
+            # This is neccessary for using deepspeed zeor3.
+            # All the inputs in the same batch should have the same activation flow.
+            pixel_values = torch.zeros(1,13,3,384,384)
+            pixel_attention_mask = torch.zeros(1,13,384,384)
 
         sources = copy.deepcopy(llava_to_openai(sources['conversations'], is_video=is_video, num_frames=num_frames))
 
