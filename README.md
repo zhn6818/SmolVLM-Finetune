@@ -8,7 +8,8 @@ This repository contains a script for training [SmolVLM](https://huggingface.co/
 **[[Qwen2-VL Finetuning]](https://github.com/2U1/Qwen2-VL-Finetune)**<br>
 **[[Llama3.2-Vision Finetuning]](https://github.com/2U1/Llama3.2-Vision-Ft)**<br>
 **[[Molmo Finetune]](https://github.com/2U1/Molmo-Finetune)**<br>
-**[[Pixtral Finetune]](https://github.com/2U1/Pixtral-Finetune)**
+**[[Pixtral Finetune]](https://github.com/2U1/Pixtral-Finetune)**<br>
+**[[Gemma3 Finetune]](https://github.com/2U1/Gemma3-Finetune)**
 
 ## Update
 
@@ -48,7 +49,24 @@ This repository contains a script for training [SmolVLM](https://huggingface.co/
 - Disable/enable Flash Attention 2
 - Multi-image and video training
 
+## Docker
+
+To simplfy the setting process for training, you could use the provided pre-build environments.<br>
+The settings are done in the conda env named `train`.<br><br>
+You could find more information about the image [here](https://hub.docker.com/repository/docker/john119/vlm/general).
+
+```
+docker pull john119/vlm:v1
+docker run --gpus all -it -v /host/path:/docker/path --name vlm --ipc=host john119/vlm:v1 /bin/bash
+```
+
 ## Installation
+
+### Environments
+
+- Ubuntu 22.04
+- Nvidia-Driver 550.120
+- Cuda version 12.4
 
 Install the required packages using `environment.yaml`.
 
@@ -57,7 +75,7 @@ Install the required packages using `environment.yaml`.
 ```bash
 conda env create -f environment.yaml
 conda activate smolvlm
-pip install flash-attn==2.5.8 --no-build-isolation
+pip install --no-build-isolation
 ```
 
 **Note:** You should install flash-attn after installing the other packages.
@@ -273,6 +291,7 @@ You could see this [issue](https://github.com/andimarafioti/florence2-finetuning
 ## TODO
 
 - [ ] Add feature for controlling image size.
+- [ ] Add support smolvlm2.
 - [x] Handle interleaved dataset.
 - [x] Hadnle mixed-modality dataset.
 
