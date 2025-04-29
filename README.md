@@ -24,7 +24,10 @@ This repository contains a script for training [SmolVLM](https://huggingface.co/
   - [Update](#update)
   - [Table of Contents](#table-of-contents)
   - [Supported Features](#supported-features)
+  - [Docker](#docker)
   - [Installation](#installation)
+    - [Environments](#environments)
+    - [Using `requirements.txt`](#using-requirementstxt)
     - [Using `environment.yaml`](#using-environmentyaml)
   - [Dataset Preparation](#dataset-preparation)
   - [Training](#training)
@@ -66,16 +69,23 @@ docker run --gpus all -it -v /host/path:/docker/path --name vlm --ipc=host john1
 
 - Ubuntu 22.04
 - Nvidia-Driver 550.120
-- Cuda version 12.4
+- Cuda version 12.6
 
 Install the required packages using `environment.yaml`.
+
+### Using `requirements.txt`
+
+```bash
+pip install -r requirements.txt --index-url https://download.pytorch.org/whl/cu126
+pip install flash-attn --no-build-isolation
+```
 
 ### Using `environment.yaml`
 
 ```bash
 conda env create -f environment.yaml
-conda activate smolvlm
-pip install --no-build-isolation
+conda activate train
+pip install flash-attn --no-build-isolation
 ```
 
 **Note:** You should install flash-attn after installing the other packages.
