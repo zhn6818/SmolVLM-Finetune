@@ -58,8 +58,8 @@ The settings are done in the conda env named `train`.<br><br>
 You could find more information about the image [here](https://hub.docker.com/repository/docker/john119/vlm/general).
 
 ```
-docker pull john119/vlm:v1
-docker run --gpus all -it -v /host/path:/docker/path --name vlm --ipc=host john119/vlm:v1 /bin/bash
+docker pull john119/vlm
+docker run --gpus all -it -v /host/path:/docker/path --name vlm --ipc=host john119/vlm /bin/bash
 ```
 
 ## Installation
@@ -68,7 +68,7 @@ docker run --gpus all -it -v /host/path:/docker/path --name vlm --ipc=host john1
 
 - Ubuntu 22.04
 - Nvidia-Driver 550.120
-- Cuda version 12.6
+- Cuda version 12.4
 
 Install the required packages using `environment.yaml`.
 
