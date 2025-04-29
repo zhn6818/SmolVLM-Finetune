@@ -77,6 +77,7 @@ Install the required packages using `environment.yaml`.
 ```bash
 pip install -r requirements.txt --index-url https://download.pytorch.org/whl/cu126
 pip install flash-attn --no-build-isolation
+pip install pillow-avif-plugin
 ```
 
 ### Using `environment.yaml`
@@ -85,6 +86,7 @@ pip install flash-attn --no-build-isolation
 conda env create -f environment.yaml
 conda activate train
 pip install flash-attn --no-build-isolation
+pip install pillow-avif-plugin
 ```
 
 **Note:** You should install flash-attn after installing the other packages.

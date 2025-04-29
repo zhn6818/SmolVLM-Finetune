@@ -9,6 +9,24 @@ from train.params import DataArguments, ModelArguments, TrainingArguments
 from train.train_utils import get_peft_state_maybe_zero_3, get_peft_state_non_lora_maybe_zero_3, safe_save_model_for_hf_trainer
 import pathlib
 
+import warnings
+
+# Image handling imports
+from PIL import Image, ImageFile
+
+# AVIF support initialization
+try:
+    from pillow_avif import register_avif_opener
+    register_avif_opener()
+    AVIF_SUPPORT = True
+except ImportError:
+    AVIF_SUPPORT = False
+    warnings.warn("AVIF support disabled. Install pillow-avif-plugin for AVIF support.")
+
+# Configure image loading
+ImageFile.LOAD_TRUNCATED_IMAGES = True
+Image.MAX_IMAGE_PIXELS = None
+
 local_rank = None
 
 def rank0_print(*args):
@@ -36,7 +54,16 @@ def set_requires_grad(parameters, requires_grad):
     for p in parameters:
         p.requires_grad = requires_grad
 
-def configure_vision_tower(model, training_args, compute_dtype, device):
+def configure_vision_tower(model, processor, training_args, compute_dtype, device):
+    """Modified for Idefics3 architecture with separate processor"""
+    # See https://github.com/Haven-hvn/SmolVLM-Finetune/commit/f5a96b3d5b164f07c57a61f9cd0fe56171a0474b
+    # Configure image processor
+    if processor is not None and hasattr(processor, 'image_processor'):
+        if AVIF_SUPPORT:
+            processor.image_processor.image_format = "AVIF"
+        else:
+            processor.image_processor.image_format = "JPEG"
+        processor.image_processor.do_convert_rgb = True
     vision_tower = model.model.vision_model
     vision_tower.to(dtype=compute_dtype, device=device)
 
@@ -55,6 +82,28 @@ def configure_llm(model, training_args):
     set_requires_grad(llm_params, not training_args.freeze_llm)
 
 
+def validate_image_files(data_args):
+    """Check image formats and warn about unsupported types"""
+    valid_extensions = {'.avif', '.jpg', '.jpeg', '.png', '.webp'}
+    invalid_files = []
+    
+    for img_file in pathlib.Path(data_args.image_folder).rglob('*'):
+        if img_file.suffix.lower() not in valid_extensions:
+            invalid_files.append(img_file)
+    
+    if invalid_files:
+        warning_msg = f"Found {len(invalid_files)} files with unsupported extensions:\n"
+        warning_msg += "\n".join(str(f) for f in invalid_files[:5])
+        if len(invalid_files) > 5:
+            warning_msg += f"\n...and {len(invalid_files)-5} more"
+        
+        if data_args.strict_image_validation:
+            raise ValueError(f"Invalid image formats detected:\n{warning_msg}")
+        else:
+            rank0_print(f"WARNING: {warning_msg}")
+            rank0_print("Skipping invalid files as strict_image_validation=False")
+
+
 def train():
     global local_rank
 
@@ -62,6 +111,8 @@ def train():
         (ModelArguments, DataArguments, TrainingArguments))
     
     model_args, data_args, training_args = parser.parse_args_into_dataclasses()
+
+    validate_image_files(data_args)
 
     assert not (training_args.lora_enable and training_args.freeze_llm), 'When using LoRA, the LLM should not be frozen. If you want to freeze the LLM, please disable LoRA.'
 
@@ -75,10 +126,13 @@ def train():
         training_args.lora_namespan_exclude = []
 
     if not training_args.vision_lora:
-        training_args.lora_namespan_exclude += ["vison_model"]
+        training_args.lora_namespan_exclude += ["vision_model"]
 
     local_rank = training_args.local_rank
     compute_dtype = (torch.float16 if training_args.fp16 else (torch.bfloat16 if training_args.bf16 else torch.float32))
+
+    processor = AutoProcessor.from_pretrained(model_args.model_id,
+                                            padding_side="right")
 
     bnb_model_from_pretrained_args = {}
     if training_args.bits in [4,8]:
@@ -105,7 +159,7 @@ def train():
 
     model_to_configure = model
     configure_llm(model_to_configure, training_args)
-    configure_vision_tower(model_to_configure, training_args, compute_dtype, training_args.device)
+    configure_vision_tower(model_to_configure, processor, training_args, compute_dtype, training_args.device)
 
     model.config.use_cache = False
 
@@ -134,9 +188,6 @@ def train():
                 model.to(torch.float16)
         rank0_print("Adding LoRA to the model...")
         model = get_peft_model(model, peft_config)
-
-    processor = AutoProcessor.from_pretrained(model_args.model_id,
-                                              padding_side="right")
 
     # model.config.tokenizer_model_max_length = processor.tokenizer.model_max_length
     model.config.tokenizer_padding_side = processor.tokenizer.padding_side
