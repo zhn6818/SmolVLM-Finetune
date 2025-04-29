@@ -32,7 +32,6 @@ This repository contains a script for training [SmolVLM](https://huggingface.co/
   - [Dataset Preparation](#dataset-preparation)
   - [Training](#training)
     - [Full Finetuning](#full-finetuning)
-    - [Full Finetuning with 8-bit](#full-finetuning-with-8-bit)
     - [Finetune with LoRA](#finetune-with-lora)
     - [Train with video dataset](#train-with-video-dataset)
       - [Merge LoRA Weights](#merge-lora-weights)
@@ -202,16 +201,6 @@ To run the training script, use the following command:
 bash scripts/finetune.sh
 ```
 
-### Full Finetuning with 8-bit
-
-```bash
-bash scripts/finetune_8bit.sh
-```
-
-**You need to install [ms-amp](https://github.com/Azure/MS-AMP) to use this script.**<br>
-This script will finetune the model with fp8 model dtype. If you run out of vram, you could use this.<br>
-You can even use offloading with fp8 training. For detailed config, you could change the deepspeed config files.
-
 ### Finetune with LoRA
 
 If you want to train only the language model with LoRA and perform full training for the vision model:
@@ -302,6 +291,7 @@ You could see this [issue](https://github.com/andimarafioti/florence2-finetuning
 
 - [ ] Add feature for controlling image size.
 - [ ] Add support smolvlm2.
+- [ ] Add DPO Training.
 - [x] Handle interleaved dataset.
 - [x] Hadnle mixed-modality dataset.
 

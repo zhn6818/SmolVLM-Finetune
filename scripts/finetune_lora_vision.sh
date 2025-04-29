@@ -8,7 +8,7 @@ export PYTHONPATH=src:$PYTHONPATH
 # The connector is not included in the vision_lora. You should set tune_img_projector to True to finetune the connector.
 # Also, it might be a good idea to set additional lr for the connector.
 
-deepspeed src/training/train.py \
+deepspeed src/train/train_sft.py \
     --lora_enable True \
     --vision_lora True \
     --use_dora False \
@@ -23,7 +23,7 @@ deepspeed src/training/train.py \
     --image_folder /path/to/your/image/folder \
     --freeze_vision_tower True \
     --freeze_llm True \
-    --tune_connector True \
+    --freeze_connector False \
     --bf16 True \
     --fp16 False \
     --disable_flash_attn2 False \

@@ -6,7 +6,7 @@ export PYTHONPATH=src:$PYTHONPATH
 
 # If you want to tune the `embed_token` with LoRA, You need to tune `lm_head` together
 
-deepspeed src/training/train.py \
+deepspeed src/train/train_sft.py \
     --lora_enable True \
     --use_dora False \
     --lora_namespan_exclude "['lm_head', 'embed_tokens']" \
@@ -20,7 +20,7 @@ deepspeed src/training/train.py \
     --image_folder /path/to/your/image/folder \
     --freeze_vision_tower False \
     --freeze_llm True \
-    --tune_connector True \
+    --freeze_connector False \
     --bf16 True \
     --fp16 False \
     --disable_flash_attn2 False \

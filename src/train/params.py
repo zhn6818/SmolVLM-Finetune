@@ -1,16 +1,16 @@
 from dataclasses import dataclass, field
 from typing import Optional
 
-from transformers import TrainingArguments
+from transformers import TrainingArguments as HFTrainingArguments
 
 
 @dataclass
 class ModelArguments:
-    model_id: Optional[str] = field(default="Qwen/Qwen2-VL-7B-Instruct")
+    model_id: Optional[str] = field(default="HuggingFaceTB/SmolVLM-Instruct")
 
 
 @dataclass
-class TrainingArguments(TrainingArguments):
+class TrainingArguments(HFTrainingArguments):
     cache_dir: Optional[str] = field(default=None)
     optim: str = field(default="adamw_torch")
     adam_beta1: float = field(default=0.9)
@@ -19,7 +19,7 @@ class TrainingArguments(TrainingArguments):
 
     freeze_vision_tower: bool = field(default=False)
     freeze_llm: bool = field(default=False)
-    tune_connector: bool = field(default=False)
+    freeze_connector: bool = field(default=False)
     disable_flash_attn2: bool = field(default=False)
 
     max_seq_length: int = field(

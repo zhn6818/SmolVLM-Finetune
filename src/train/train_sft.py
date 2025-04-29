@@ -3,10 +3,10 @@ import torch
 from peft import LoraConfig, get_peft_model
 import ast
 from transformers import AutoProcessor, BitsAndBytesConfig, AutoModelForVision2Seq, HfArgumentParser
-from training.trainer import SmolVLMTrainer
-from training.data import make_supervised_data_module
-from training.params import DataArguments, ModelArguments, TrainingArguments
-from training.train_utils import get_peft_state_maybe_zero_3, get_peft_state_non_lora_maybe_zero_3, safe_save_model_for_hf_trainer
+from train.trainer import SmolVLMTrainer
+from train.data import make_supervised_data_module
+from train.params import DataArguments, ModelArguments, TrainingArguments
+from train.train_utils import get_peft_state_maybe_zero_3, get_peft_state_non_lora_maybe_zero_3, safe_save_model_for_hf_trainer
 import pathlib
 
 local_rank = None
@@ -45,7 +45,7 @@ def configure_vision_tower(model, training_args, compute_dtype, device):
     
     # Handle connector specifically
     connector_params = model.model.connector.parameters()
-    set_requires_grad(connector_params, training_args.tune_connector)
+    set_requires_grad(connector_params, not training_args.freeze_connector)
 
 def configure_llm(model, training_args):
     lm_head = model.lm_head.parameters()

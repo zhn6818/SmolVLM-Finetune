@@ -4,14 +4,14 @@ MODEL_NAME="HuggingFaceTB/SmolVLM-Instruct"
 
 export PYTHONPATH=src:$PYTHONPATH
 
-deepspeed src/training/train.py \
+deepspeed src/train/train_sft.py \
     --deepspeed scripts/zero3.json \
     --model_id $MODEL_NAME \
     --data_path /path/to/your/training/data.json \
     --image_folder /path/to/your/image/folder \
     --freeze_vision_tower False \
     --freeze_llm False \
-    --tune_connector True \
+    --freeze_connector False \
     --bf16 True \
     --fp16 False \
     --disable_flash_attn2 False \
