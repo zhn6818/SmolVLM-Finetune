@@ -78,6 +78,7 @@ Install the required packages using `environment.yaml`.
 pip install -r requirements.txt --index-url https://download.pytorch.org/whl/cu126
 pip install flash-attn --no-build-isolation
 pip install pillow-avif-plugin
+pip install num2words
 ```
 
 ### Using `environment.yaml`
@@ -87,6 +88,7 @@ conda env create -f environment.yaml
 conda activate train
 pip install flash-attn --no-build-isolation
 pip install pillow-avif-plugin
+pip install num2words
 ```
 
 **Note:** You should install flash-attn after installing the other packages.
