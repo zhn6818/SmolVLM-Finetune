@@ -1,3 +1,106 @@
+# SmolVLM微调框架
+
+这个仓库包含了使用HuggingFace训练[SmolVLM](https://huggingface.co/HuggingFaceTB/SmolVLM-Instruct)的脚本。
+
+## 🚀 快速开始
+
+### 数据准备
+1. **单图数据**：将图片和对话数据按LLaVA格式整理
+2. **多图数据**：支持多张图片的对话训练
+3. **视频数据**：将视频作为图像序列进行训练
+
+### 训练方式
+- **全量微调**：`bash scripts/finetune.sh`
+- **LoRA微调**：`bash scripts/finetune_lora.sh`  
+- **视频训练**：`bash scripts/finetune_video.sh`
+
+## 📊 数据格式示例
+
+### 单图数据格式
+```json
+[
+  {
+    "id": "sample_001",
+    "image": "image1.jpg",
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n请描述这张图片中的内容"
+      },
+      {
+        "from": "gpt",
+        "value": "这张图片显示了一个美丽的风景"
+      }
+    ]
+  }
+]
+```
+
+### 多图数据格式
+```json
+[
+  {
+    "id": "sample_002", 
+    "image": ["image1.jpg", "image2.jpg"],
+    "conversations": [
+      {
+        "from": "human",
+        "value": "<image>\n<image>\n比较这两张图片的差异"
+      },
+      {
+        "from": "gpt",
+        "value": "第一张图片是白天，第二张是夜晚"
+      }
+    ]
+  }
+]
+```
+
+### 视频数据格式
+```json
+[
+  {
+    "id": "video_001",
+    "video": "video1.mp4",
+    "conversations": [
+      {
+        "from": "human", 
+        "value": "<video>\n这个视频中发生了什么？"
+      },
+      {
+        "from": "gpt",
+        "value": "视频中一个人在走路"
+      }
+    ]
+  }
+]
+```
+
+## ⚙️ 关键参数说明
+
+- `--data_path`: 训练数据JSON文件路径
+- `--image_folder`: 图片/视频文件夹路径
+- `--learning_rate`: 语言模型学习率（建议1e-5）
+- `--vision_lr`: 视觉模型学习率（建议2e-6，比语言模型小5-10倍）
+- `--lora_rank`: LoRA秩（建议64）
+- `--per_device_train_batch_size`: 每GPU批次大小
+- `--gradient_accumulation_steps`: 梯度累积步数
+
+## 🔧 环境配置
+
+```bash
+# 创建conda环境
+conda env create -f environment.yaml
+conda activate train
+
+# 安装额外依赖
+pip install flash-attn --no-build-isolation
+pip install pillow-avif-plugin
+pip install num2words
+```
+
+---
+
 # Fine-tuning SmolVLM
 
 This repository contains a script for training [SmolVLM](https://huggingface.co/HuggingFaceTB/SmolVLM-Instruct) with only using HuggingFace.
